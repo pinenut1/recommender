@@ -1,42 +1,119 @@
+
+</html>
+
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>阵容推荐工具</title>
+  <title>阴阳师 BP 辅助工具</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    input {
+      width: 200px;
+      padding: 6px;
+      margin-top: 8px;
+    }
+
+    button {
+      margin: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .suggestions {
+      border: 1px solid #ccc;
+      max-width: 200px;
+      margin-top: 4px;
+    }
+
+    .suggestions div {
+      padding: 4px 6px;
+    }
+
+    .suggestions div:hover {
+      background: #eee;
+    }
+
+    .picked-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ddd;
+      padding: 6px 10px;
+      margin: 4px 0;
+      max-width: 300px;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: red;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .danger {
+      background: #f44336;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
+
   <h1>百鬼之主请选卡ヾ(=･ω･=)o</h1>
 
-  <!-- Ban 位选择 -->
-  <section>
-    <h2>敌方 Ban 位</h2>
-    <div id="ban-quick"></div>
-    <input id="ban-input" placeholder="输入式神名关键词…" />
-    <div id="ban-suggestions"></div>
-  </section>
+  <!-- ===== Ban 区 ===== -->
+  <h2>Ban 位</h2>
 
-  <hr />
+  <div id="ban-quick"></div>
 
-  <!-- 敌方式神选择 -->
-  <section>
-    <h2>敌方式神（按顺序）</h2>
-    <div id="enemy-status">当前已选：0 / 6</div>
-    <div id="enemy-quick"></div>
-    <input id="enemy-input" placeholder="输入式神名关键词…" />
-    <div id="enemy-suggestions"></div>
-  </section>
+  <div>
+    <input
+      id="ban-input"
+      placeholder="搜索要 Ban 的式神"
+      autocomplete="off"
+    />
+    <div id="ban-suggestions" class="suggestions"></div>
+  </div>
 
-  <hr />
+  <button id="clear-ban" class="danger">清空 Ban</button>
 
-  <!-- 当前选择结果 -->
-  <section>
-    <h2>当前选择</h2>
-    <div id="current-result"></div>
-  </section>
+  <!-- ===== 敌方选择 ===== -->
+  <h2>敌方式神选择</h2>
 
+  <div id="enemy-quick"></div>
+
+  <div>
+    <input
+      id="enemy-input"
+      placeholder="搜索敌方式神"
+      autocomplete="off"
+    />
+    <div id="enemy-suggestions" class="suggestions"></div>
+  </div>
+
+  <p id="enemy-status">当前已选：0 / 6</p>
+
+  <div id="enemy-picked"></div>
+
+  <button id="clear-enemy" class="danger">一键清空敌方选择</button>
+
+  <!-- ===== 当前结果展示 ===== -->
+  <h2>当前状态</h2>
+  <div id="current-result"></div>
+
+  <!-- ===== JS ===== -->
   <script src="app.js"></script>
 </body>
-
-
 </html>
