@@ -1,35 +1,29 @@
-// ===== 式神总列表（示例，后面你可以自己补全） =====
+// ===== 式神总列表（示例，可扩展） =====
 const SHIKIGAMI_LIST = [
-  "不知火",
-  "鬼切",
-  "须佐之男",
-  "SP荒",
-  "因幡辉夜姬",
-  "帝释天",
-  "铃彦姬",
-  "千姬",
-  "缘结神",
-  "鬼吞"
+  "不知火","鬼切","须佐之男","SP荒","因幡辉夜姬","帝释天",
+  "铃彦姬","千姬","缘结神","鬼吞"
 ];
 
-// ===== 常用快捷式神（5 个） =====
-const QUICK_PICKS = [
-  "不知火",
-  "鬼切",
-  "须佐之男",
-  "SP荒",
-  "因幡辉夜姬"
-];
+// ===== 常用快捷式神 =====
+const QUICK_PICKS = ["不知火","鬼切","须佐之男","SP荒","因幡辉夜姬"];
 
-// ===== 当前选择状态（唯一真相） =====
+// ===== 当前选择状态 =====
 let currentBan = null;
 let enemyPicks = [];
+let strategies = [];
 
-// ===== 通用：渲染快捷按钮 =====
+// ===== 加载 strategies.json =====
+fetch("strategies.json")
+  .then(res => res.json())
+  .then(data => {
+    strategies = data;
+    console.log("策略数据已加载", strategies);
+  });
+
+// ===== 渲染快捷按钮 =====
 function renderQuickButtons(containerId, onClick) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
-
   QUICK_PICKS.forEach(name => {
     const btn = document.createElement("button");
     btn.textContent = name;
@@ -38,21 +32,18 @@ function renderQuickButtons(containerId, onClick) {
   });
 }
 
-// ===== 通用：联想输入 =====
+// ===== 联想输入 =====
 function renderSuggestions(inputEl, containerId, onSelect) {
   const keyword = inputEl.value.trim();
   const container = document.getElementById(containerId);
   container.innerHTML = "";
-
   if (!keyword) return;
 
-  SHIKIGAMI_LIST
-    .filter(name => name.includes(keyword))
+  SHIKIGAMI_LIST.filter(name => name.includes(keyword))
     .slice(0, 6)
     .forEach(name => {
       const div = document.createElement("div");
       div.textContent = name;
-      div.style.cursor = "pointer";
       div.onclick = () => {
         onSelect(name);
         inputEl.value = "";
@@ -62,11 +53,11 @@ function renderSuggestions(inputEl, containerId, onSelect) {
     });
 }
 
-// ===== Ban 位选择 =====
+// ===== Ban 区 =====
 renderQuickButtons("ban-quick", name => {
   currentBan = name;
   renderBan();
-  updateResult();
+  updateRecommendations();
 });
 
 const banInput = document.getElementById("ban-input");
@@ -74,102 +65,131 @@ banInput.addEventListener("input", () => {
   renderSuggestions(banInput, "ban-suggestions", name => {
     currentBan = name;
     renderBan();
-    updateResult();
+    updateRecommendations();
   });
 });
 
-// ===== 敌方式神选择 =====
+// 删除 ban
+document.getElementById("remove-ban").onclick = () => {
+  currentBan = null;
+  renderBan();
+  updateRecommendations();
+};
+
+// ===== 敌方选择 =====
 renderQuickButtons("enemy-quick", name => {
   if (enemyPicks.length >= 6) return;
   enemyPicks.push(name);
   renderEnemyPicked();
-  updateResult();
+  updateRecommendations();
 });
 
 const enemyInput = document.getElementById("enemy-input");
 enemyInput.addEventListener("input", () => {
+  if (enemyPicks.length >= 6) return;
   renderSuggestions(enemyInput, "enemy-suggestions", name => {
-    if (enemyPicks.length >= 6) return;
     enemyPicks.push(name);
     renderEnemyPicked();
-    updateResult();
+    updateRecommendations();
   });
 });
 
-// ===== 渲染 Ban（可删除 / 重选） =====
+// 清空敌方
+document.getElementById("clear-enemy").onclick = () => {
+  enemyPicks = [];
+  renderEnemyPicked();
+  updateRecommendations();
+};
+
+// 一键清空
+document.getElementById("clear-all").onclick = () => {
+  currentBan = null;
+  enemyPicks = [];
+  renderBan();
+  renderEnemyPicked();
+  updateRecommendations();
+};
+
+// ===== 渲染 Ban =====
 function renderBan() {
-  const container = document.getElementById("enemy-ban");
+  const container = document.getElementById("ban-quick");
   container.innerHTML = "";
-
-  if (!currentBan) {
-    container.textContent = "尚未选择";
-    return;
+  if (currentBan) {
+    const item = document.createElement("div");
+    item.className = "picked-item";
+    item.innerHTML = `<span>${currentBan}</span> <button class="remove-btn">✕</button>`;
+    item.querySelector("button").onclick = () => {
+      currentBan = null;
+      renderBan();
+      updateRecommendations();
+    };
+    container.appendChild(item);
   }
-
-  const item = document.createElement("div");
-  item.className = "picked-item";
-  item.innerHTML = `
-    <span>${currentBan}</span>
-    <button class="remove-btn">✕</button>
-  `;
-
-  item.querySelector("button").onclick = () => {
-    currentBan = null;
-    renderBan();
-    updateResult();
-  };
-
-  container.appendChild(item);
 }
 
-// ===== 渲染敌方已选式神（可单个删除） =====
+// ===== 渲染敌方已选 =====
 function renderEnemyPicked() {
   const container = document.getElementById("enemy-picked");
   container.innerHTML = "";
-
   enemyPicks.forEach((name, index) => {
     const item = document.createElement("div");
     item.className = "picked-item";
-
-    item.innerHTML = `
-      <span>${index + 1}. ${name}</span>
-      <button class="remove-btn" data-index="${index}">✕</button>
-    `;
-
+    item.innerHTML = `<span>${index + 1}. ${name}</span> <button class="remove-btn" data-index="${index}">✕</button>`;
     item.querySelector("button").onclick = () => {
       enemyPicks.splice(index, 1);
       renderEnemyPicked();
-      updateResult();
+      updateRecommendations();
     };
-
     container.appendChild(item);
+  });
+  document.getElementById("enemy-status").textContent = `当前已选：${enemyPicks.length} / 6`;
+}
+
+// ===== 推荐逻辑 =====
+function updateRecommendations() {
+  const container = document.getElementById("recommendations");
+  container.innerHTML = "";
+
+  if (!strategies.length) return;
+
+  let matches = strategies.filter(s => s.ban === currentBan &&
+    enemyPicks.every((e,i) => s.enemy[i] === e)
+  );
+
+  let relaxed = false;
+  // 放宽匹配条件，如果严格匹配为空
+  if (matches.length === 0 && currentBan) {
+    matches = strategies.filter(s => s.ban === currentBan);
+    relaxed = true;
+  }
+
+  if (matches.length === 0) {
+    container.innerHTML = "<p>暂无匹配策略</p>";
+    return;
+  }
+
+  matches.slice(0,3).forEach(s => {
+    const div = document.createElement("div");
+    div.className = "rec-item";
+    div.innerHTML = `
+      <p class="rec-title">${relaxed ? "(非完全匹配) " : ""}我方推荐阵容: ${s.my.join(" → ")}</p>
+      <p>阴阳师: ${s.shikigami.join(", ")}</p>
+      <p>操作细节: ${s.operation}</p>
+      <p>补充说明: ${s.notes}</p>
+    `;
+    container.appendChild(div);
   });
 }
 
-// ===== 一键清空敌方选择 =====
-const clearBtn = document.getElementById("clear-enemy");
-if (clearBtn) {
-  clearBtn.onclick = () => {
-    currentBan = null;
-    enemyPicks = [];
-    renderBan();
-    renderEnemyPicked();
-    updateResult();
-  };
-}
-
-// ===== 状态展示（调试 / 当前状态） =====
-function updateResult() {
-  document.getElementById("enemy-status").textContent =
-    `当前已选：${enemyPicks.length} / 6`;
-
-  document.getElementById("current-result").innerHTML = `
-    <p>Ban：${currentBan || "未选择"}</p>
-    <p>敌方：${enemyPicks.join(" → ") || "未选择"}</p>
-  `;
-}
-
-// ===== 初始化渲染 =====
-renderBan();
-renderEnemyPicked();
-updateResult();
+// ===== 初始化 =====
+renderQuickButtons("ban-quick", name => {
+  currentBan = name;
+  renderBan();
+  updateRecommendations();
+});
+renderQuickButtons("enemy-quick", name => {
+  if (enemyPicks.length >= 6) return;
+  enemyPicks.push(name);
+  renderEnemyPicked();
+  updateRecommendations();
+});

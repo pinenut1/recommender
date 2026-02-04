@@ -1,16 +1,13 @@
-
-</html>
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>阴阳师 BP 辅助工具</title>
+  <title>蓝帽子焚诀</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
     }
 
@@ -66,52 +63,61 @@
       background: #f44336;
       color: white;
     }
+
+    #recommendations {
+      margin-top: 20px;
+      border: 1px solid #aaa;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+
+    .rec-item {
+      margin-bottom: 12px;
+    }
+
+    .rec-item p {
+      margin: 2px 0;
+    }
+
+    .rec-title {
+      font-weight: bold;
+      color: #333;
+    }
   </style>
 </head>
 
 <body>
-
   <h1>百鬼之主请选卡ヾ(=･ω･=)o</h1>
 
   <!-- ===== Ban 区 ===== -->
   <h2>Ban 位</h2>
-
   <div id="ban-quick"></div>
 
   <div>
-    <input
-      id="ban-input"
-      placeholder="搜索要 Ban 的式神"
-      autocomplete="off"
-    />
+    <input id="ban-input" placeholder="搜索要 Ban 的式神" autocomplete="off" />
     <div id="ban-suggestions" class="suggestions"></div>
   </div>
 
-  <button id="clear-ban" class="danger">清空 Ban</button>
+  <button id="remove-ban" class="danger">删除 Ban 位</button>
 
   <!-- ===== 敌方选择 ===== -->
   <h2>敌方式神选择</h2>
-
   <div id="enemy-quick"></div>
 
   <div>
-    <input
-      id="enemy-input"
-      placeholder="搜索敌方式神"
-      autocomplete="off"
-    />
+    <input id="enemy-input" placeholder="搜索敌方式神" autocomplete="off" />
     <div id="enemy-suggestions" class="suggestions"></div>
   </div>
 
   <p id="enemy-status">当前已选：0 / 6</p>
-
   <div id="enemy-picked"></div>
 
-  <button id="clear-enemy" class="danger">一键清空敌方选择</button>
+  <button id="clear-enemy" class="danger">清空敌方选择</button>
+  <button id="clear-all" class="danger">一键清空（Ban + 敌方）</button>
 
-  <!-- ===== 当前结果展示 ===== -->
-  <h2>当前状态</h2>
-  <div id="current-result"></div>
+  <!-- ===== 推荐结果 ===== -->
+  <h2>推荐阵容</h2>
+  <div id="recommendations"></div>
 
   <!-- ===== JS ===== -->
   <script src="app.js"></script>
