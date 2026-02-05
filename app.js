@@ -26,7 +26,7 @@ fetch("strategies.json")
     updateRecommendations();
   });
 
-// ===== 渲染快捷按钮 =====
+// ===== 渲染快捷按钮（只负责快捷，不负责状态） =====
 function renderQuickButtons(containerId, onClick) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
@@ -59,10 +59,10 @@ function renderSuggestions(inputEl, containerId, onSelect) {
     });
 }
 
-// ===== Ban =====
+// ===== Ban 快捷（永远存在） =====
 renderQuickButtons("ban-quick", name => {
   currentBan = name;
-  renderBan();
+  renderBanPicked();
   updateRecommendations();
 });
 
@@ -70,18 +70,37 @@ const banInput = document.getElementById("ban-input");
 banInput.addEventListener("input", () => {
   renderSuggestions(banInput, "ban-suggestions", name => {
     currentBan = name;
-    renderBan();
+    renderBanPicked();
     updateRecommendations();
   });
 });
 
 document.getElementById("remove-ban").onclick = () => {
   currentBan = null;
-  renderBan();
+  renderBanPicked();
   updateRecommendations();
 };
 
-// ===== 敌方选择 =====
+// ===== 渲染当前 Ban（独立容器） =====
+function renderBanPicked() {
+  const container = document.getElementById("ban-picked");
+  container.innerHTML = "";
+
+  if (!currentBan) return;
+
+  const item = document.createElement("div");
+  item.className = "picked-item";
+  item.innerHTML = `<span>${currentBan}</span> <button class="remove-btn">✕</button>`;
+  item.querySelector("button").onclick = () => {
+    currentBan = null;
+    renderBanPicked();
+    updateRecommendations();
+  };
+
+  container.appendChild(item);
+}
+
+// ===== 敌方快捷 =====
 renderQuickButtons("enemy-quick", name => {
   if (enemyPicks.length >= 6) return;
   enemyPicks.push(name);
@@ -108,32 +127,16 @@ document.getElementById("clear-enemy").onclick = () => {
 document.getElementById("clear-all").onclick = () => {
   currentBan = null;
   enemyPicks = [];
-  renderBan();
+  renderBanPicked();
   renderEnemyPicked();
   updateRecommendations();
 };
-
-// ===== 渲染 Ban =====
-function renderBan() {
-  const container = document.getElementById("ban-quick");
-  container.innerHTML = "";
-  if (!currentBan) return;
-
-  const item = document.createElement("div");
-  item.className = "picked-item";
-  item.innerHTML = `<span>${currentBan}</span> <button class="remove-btn">✕</button>`;
-  item.querySelector("button").onclick = () => {
-    currentBan = null;
-    renderBan();
-    updateRecommendations();
-  };
-  container.appendChild(item);
-}
 
 // ===== 渲染敌方 =====
 function renderEnemyPicked() {
   const container = document.getElementById("enemy-picked");
   container.innerHTML = "";
+
   enemyPicks.forEach((name, idx) => {
     const div = document.createElement("div");
     div.className = "picked-item";
@@ -145,6 +148,7 @@ function renderEnemyPicked() {
     };
     container.appendChild(div);
   });
+
   document.getElementById("enemy-status").textContent =
     `当前已选：${enemyPicks.length} / 6`;
 }
@@ -181,15 +185,8 @@ function updateRecommendations() {
   const evaluated = strategies.map(evaluateStrategy);
 
   evaluated.sort((a, b) => {
-    // 1️⃣ 命中数量
-    if (b.hitCount !== a.hitCount) {
-      return b.hitCount - a.hitCount;
-    }
-    // 2️⃣ ban 优先级（同命中数）
-    if (a.hasBan !== b.hasBan) {
-      return a.hasBan ? 1 : -1;
-    }
-    // 3️⃣ 位置距离（仅同命中数）
+    if (b.hitCount !== a.hitCount) return b.hitCount - a.hitCount;
+    if (a.hasBan !== b.hasBan) return a.hasBan ? 1 : -1;
     return a.distanceSum - b.distanceSum;
   });
 
@@ -215,14 +212,5 @@ function updateRecommendations() {
 }
 
 // ===== 初始化 =====
-renderQuickButtons("ban-quick", name => {
-  currentBan = name;
-  renderBan();
-  updateRecommendations();
-});
-renderQuickButtons("enemy-quick", name => {
-  if (enemyPicks.length >= 6) return;
-  enemyPicks.push(name);
-  renderEnemyPicked();
-  updateRecommendations();
-});
+renderBanPicked();
+renderEnemyPicked();
