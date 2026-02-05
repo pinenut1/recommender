@@ -1,27 +1,29 @@
-// ===== 式神总列表（示例，可扩展） =====
+// ===== 式神总列表 =====
 const SHIKIGAMI_LIST = [
   "不知火","须佐之男","sp荒","因幡辉夜姬","卑弥呼","sp茶几",
   "阎魔","sp不见岳","sp座敷","摩托","鬼吞","一目连","sp禅镜","帝释天",
   "封阳君","sp追月","sp熊","sp蛇","铃鹿御前","面灵气","入内雀","李小狼",
   "祸津神","神无月","龙珏","sp岚","太奶","千姬","云外镜","ssr蛇","sp小白","泷",
   "猫川","月读","缘结神","sp鹿丸","雨女","sp猫","老头",
-  "匣子","言灵","初音","鬼金羊","sp雪女"
+  "匣子","言灵","初音","鬼金羊","sp雪女","荒骷髅","平将门"
 ];
 
 // ===== 常用快捷式神 =====
-const QUICK_PICKS = ["不知火","鬼吞","平将门","封阳君","卑弥呼","荒骷髅","sp禅镜","鬼金羊"];
+const QUICK_PICKS = [
+  "不知火","鬼吞","平将门","封阳君","卑弥呼","荒骷髅","sp禅镜","鬼金羊"
+];
 
-// ===== 当前选择状态 =====
+// ===== 当前状态 =====
 let currentBan = null;
 let enemyPicks = [];
 let strategies = [];
 
-// ===== 加载 strategies.json =====
+// ===== 加载策略数据 =====
 fetch("strategies.json")
   .then(res => res.json())
   .then(data => {
     strategies = data;
-    console.log("策略数据已加载", strategies);
+    updateRecommendations();
   });
 
 // ===== 渲染快捷按钮 =====
@@ -43,7 +45,7 @@ function renderSuggestions(inputEl, containerId, onSelect) {
   container.innerHTML = "";
   if (!keyword) return;
 
-  SHIKIGAMI_LIST.filter(name => name.includes(keyword))
+  SHIKIGAMI_LIST.filter(n => n.includes(keyword))
     .slice(0, 6)
     .forEach(name => {
       const div = document.createElement("div");
@@ -57,7 +59,7 @@ function renderSuggestions(inputEl, containerId, onSelect) {
     });
 }
 
-// ===== Ban 区 =====
+// ===== Ban =====
 renderQuickButtons("ban-quick", name => {
   currentBan = name;
   renderBan();
@@ -73,7 +75,6 @@ banInput.addEventListener("input", () => {
   });
 });
 
-// 删除 ban
 document.getElementById("remove-ban").onclick = () => {
   currentBan = null;
   renderBan();
@@ -98,14 +99,12 @@ enemyInput.addEventListener("input", () => {
   });
 });
 
-// 清空敌方
 document.getElementById("clear-enemy").onclick = () => {
   enemyPicks = [];
   renderEnemyPicked();
   updateRecommendations();
 };
 
-// 一键清空
 document.getElementById("clear-all").onclick = () => {
   currentBan = null;
   enemyPicks = [];
@@ -118,68 +117,98 @@ document.getElementById("clear-all").onclick = () => {
 function renderBan() {
   const container = document.getElementById("ban-quick");
   container.innerHTML = "";
-  if (currentBan) {
-    const item = document.createElement("div");
-    item.className = "picked-item";
-    item.innerHTML = `<span>${currentBan}</span> <button class="remove-btn">✕</button>`;
-    item.querySelector("button").onclick = () => {
-      currentBan = null;
-      renderBan();
-      updateRecommendations();
-    };
-    container.appendChild(item);
-  }
+  if (!currentBan) return;
+
+  const item = document.createElement("div");
+  item.className = "picked-item";
+  item.innerHTML = `<span>${currentBan}</span> <button class="remove-btn">✕</button>`;
+  item.querySelector("button").onclick = () => {
+    currentBan = null;
+    renderBan();
+    updateRecommendations();
+  };
+  container.appendChild(item);
 }
 
-// ===== 渲染敌方已选 =====
+// ===== 渲染敌方 =====
 function renderEnemyPicked() {
   const container = document.getElementById("enemy-picked");
   container.innerHTML = "";
-  enemyPicks.forEach((name, index) => {
-    const item = document.createElement("div");
-    item.className = "picked-item";
-    item.innerHTML = `<span>${index + 1}. ${name}</span> <button class="remove-btn" data-index="${index}">✕</button>`;
-    item.querySelector("button").onclick = () => {
-      enemyPicks.splice(index, 1);
+  enemyPicks.forEach((name, idx) => {
+    const div = document.createElement("div");
+    div.className = "picked-item";
+    div.innerHTML = `<span>${idx + 1}. ${name}</span> <button class="remove-btn">✕</button>`;
+    div.querySelector("button").onclick = () => {
+      enemyPicks.splice(idx, 1);
       renderEnemyPicked();
       updateRecommendations();
     };
-    container.appendChild(item);
+    container.appendChild(div);
   });
-  document.getElementById("enemy-status").textContent = `当前已选：${enemyPicks.length} / 6`;
+  document.getElementById("enemy-status").textContent =
+    `当前已选：${enemyPicks.length} / 6`;
+}
+
+// ===== 计算匹配信息 =====
+function evaluateStrategy(strategy) {
+  let hitCount = 0;
+  let distanceSum = 0;
+
+  enemyPicks.forEach((pick, userIndex) => {
+    const idx = strategy.enemy.indexOf(pick);
+    if (idx !== -1) {
+      hitCount++;
+      distanceSum += Math.abs(idx - userIndex);
+    }
+  });
+
+  const hasBan = currentBan && strategy.enemy.includes(currentBan);
+
+  return {
+    ...strategy,
+    hitCount,
+    distanceSum,
+    hasBan
+  };
 }
 
 // ===== 推荐逻辑 =====
 function updateRecommendations() {
   const container = document.getElementById("recommendations");
   container.innerHTML = "";
-
   if (!strategies.length) return;
 
-  let matches = strategies.filter(s => s.ban === currentBan &&
-    enemyPicks.every((e,i) => s.enemy[i] === e)
-  );
+  const evaluated = strategies.map(evaluateStrategy);
 
-  let relaxed = false;
-  // 放宽匹配条件，如果严格匹配为空
-  if (matches.length === 0 && currentBan) {
-    matches = strategies.filter(s => s.ban === currentBan);
-    relaxed = true;
-  }
+  evaluated.sort((a, b) => {
+    // 1️⃣ 命中数量
+    if (b.hitCount !== a.hitCount) {
+      return b.hitCount - a.hitCount;
+    }
+    // 2️⃣ ban 优先级（同命中数）
+    if (a.hasBan !== b.hasBan) {
+      return a.hasBan ? 1 : -1;
+    }
+    // 3️⃣ 位置距离（仅同命中数）
+    return a.distanceSum - b.distanceSum;
+  });
 
-  if (matches.length === 0) {
-    container.innerHTML = "<p>暂无匹配策略</p>";
-    return;
-  }
-
-  matches.slice(0,3).forEach(s => {
+  evaluated.forEach(s => {
     const div = document.createElement("div");
     div.className = "rec-item";
+
+    const tags = [];
+    tags.push(`命中 ${s.hitCount}`);
+    if (s.hasBan) tags.push("包含 ban");
+
     div.innerHTML = `
-      <p class="rec-title">${relaxed ? "(非完全匹配) " : ""}我方推荐阵容: ${s.my.join(" → ")}</p>
-      <p>阴阳师: ${s.shikigami.join(", ")}</p>
-      <p>操作细节: ${s.operation}</p>
-      <p>补充说明: ${s.notes}</p>
+      <p class="rec-title">
+        我方阵容：${s.my.join(" → ")}
+        <span class="tags">[${tags.join(" / ")}]</span>
+      </p>
+      <p>阴阳师：${s.shikigami?.join(", ") || "—"}</p>
+      <p>操作：${s.operation || "—"}</p>
+      <p class="notes">${s.notes || ""}</p>
     `;
     container.appendChild(div);
   });
