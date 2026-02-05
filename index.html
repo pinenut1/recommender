@@ -40,8 +40,7 @@
       border: none;
     }
 
-    /* ===== 顶部栏 ===== */
-
+    /* ===== 右上角切换按钮 ===== */
     .top-bar {
       position: fixed;
       top: 10px;
@@ -50,7 +49,6 @@
     }
 
     /* ===== 页面布局 ===== */
-
     .page {
       padding: 16px;
       padding-top: 48px;
@@ -63,7 +61,8 @@
     }
 
     body.vertical .page {
-      display: block;
+      display: flex;
+      flex-direction: column;
     }
 
     /* 左：推荐阵容 */
@@ -77,18 +76,26 @@
       flex: 0 0 360px;
     }
 
+    /* 横屏 sticky */
     body.horizontal .side-panel {
       position: sticky;
       top: 48px;
     }
 
-    /* ===== 面板 ===== */
+    /* ⭐ 关键修正：竖屏顺序 */
+    body.vertical .side-panel {
+      order: 1;
+    }
 
+    body.vertical .main-panel {
+      order: 2;
+    }
+
+    /* ===== 面板样式 ===== */
     .panel {
       background: var(--bg-soft);
       border: 1px solid var(--border);
       padding: 12px;
-      box-sizing: border-box;
       margin-bottom: 12px;
     }
 
@@ -106,15 +113,14 @@
       border: none;
       background: transparent;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .suggestions div {
       padding: 4px 6px;
-      cursor: pointer;
       background: #fff;
       border: 1px solid var(--border);
       border-top: none;
+      cursor: pointer;
     }
 
     .suggestions div:hover {
@@ -122,7 +128,6 @@
     }
 
     /* ===== 推荐区 ===== */
-
     .recommendations {
       background: var(--bg-rec);
       border: 1px solid var(--border);
@@ -142,22 +147,21 @@
       font-weight: 600;
     }
 
+    .enemy-line {
+      color: #555;
+      font-size: 14px;
+    }
+
     .tags {
       font-size: 12px;
       color: #666;
       margin-left: 6px;
-    }
-
-    .notes {
-      color: #444;
-      font-size: 14px;
     }
   </style>
 </head>
 
 <body class="horizontal">
 
-<!-- 右上角布局切换 -->
 <div class="top-bar">
   <button onclick="
     document.body.classList.toggle('horizontal');
@@ -169,7 +173,7 @@
 
 <div class="page">
 
-  <!-- ===== 左侧：推荐阵容 ===== -->
+  <!-- 推荐阵容 -->
   <div class="main-panel">
     <div class="recommendations">
       <h1>蓝帽子焚诀</h1>
@@ -178,41 +182,30 @@
     </div>
   </div>
 
-  <!-- ===== 右侧：BP 区 ===== -->
+  <!-- BP 区 -->
   <div class="side-panel">
 
-    <!-- Ban -->
     <div class="panel">
       <h2>Ban 位</h2>
-
       <div id="ban-picked"></div>
-
       <input id="ban-input" placeholder="输入式神名…" />
       <div id="ban-suggestions" class="suggestions"></div>
-
       <div id="ban-quick"></div>
-
       <button id="remove-ban" class="danger">清空 Ban</button>
     </div>
 
-    <!-- 敌方 -->
     <div class="panel">
       <h2>敌方式神</h2>
-
       <div id="enemy-picked"></div>
       <div id="enemy-status">当前已选：0 / 6</div>
-
       <input id="enemy-input" placeholder="输入式神名…" />
       <div id="enemy-suggestions" class="suggestions"></div>
-
       <div id="enemy-quick"></div>
-
       <button id="clear-enemy" class="danger">清空敌方</button>
       <button id="clear-all">全部清空</button>
     </div>
 
   </div>
-
 </div>
 
 <script src="app.js"></script>

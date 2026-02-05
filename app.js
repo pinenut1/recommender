@@ -203,6 +203,7 @@ function updateRecommendations() {
         我方阵容：${s.my.join(" → ")}
         <span class="tags">[${tags.join(" / ")}]</span>
       </p>
+      <p class="enemy-line">敌方阵容：${s.enemy.join(" → ")}</p>
       <p>阴阳师：${s.shikigami?.join(", ") || "—"}</p>
       <p>操作：${s.operation || "—"}</p>
       <p class="notes">${s.notes || ""}</p>
