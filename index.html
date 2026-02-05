@@ -9,7 +9,7 @@
     :root {
       --gap: 12px;
       --border: #ddd;
-      --bg-soft: #f7f7f7;
+      --bg-soft: #f6f6f6;
       --bg-rec: #fafafa;
     }
 
@@ -20,13 +20,13 @@
     }
 
     h1 {
-      margin: 0 0 12px 0;
       font-size: 20px;
+      margin: 0;
     }
 
     h2 {
       font-size: 16px;
-      margin: 16px 0 8px;
+      margin: 12px 0 6px;
     }
 
     button {
@@ -43,16 +43,16 @@
 
     .danger {
       background: #f44336;
-      color: white;
+      color: #fff;
       border: none;
     }
 
-    /* ===== 布局控制 ===== */
+    /* ===== 布局模式 ===== */
 
     body.horizontal .page {
       display: flex;
-      align-items: flex-start;
       gap: var(--gap);
+      align-items: flex-start;
     }
 
     body.vertical .page {
@@ -61,6 +61,15 @@
 
     .page {
       padding: 16px;
+    }
+
+    /* ===== 顶部栏 ===== */
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
     }
 
     /* ===== 操作区 ===== */
@@ -84,180 +93,5 @@
     }
 
     .block {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
-
-    /* ===== 快捷区 ===== */
-
-    .quick-area {
-      margin-bottom: 6px;
-    }
-
-    /* ===== suggestions ===== */
-
-    .suggestions {
-      border: 1px solid #ccc;
-      margin-top: 4px;
-      background: #fff;
-    }
-
-    .suggestions div {
-      padding: 4px 6px;
-      cursor: pointer;
-    }
-
-    .suggestions div:hover {
-      background: #eee;
-    }
-
-    .picked-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      margin: 4px 0;
-      background: #fff;
-    }
-
-    .remove-btn {
-      background: none;
-      border: none;
-      color: red;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    /* ===== 推荐区 ===== */
-
-    .recommendations {
-      border: 1px solid var(--border);
-      background: var(--bg-rec);
-      padding: 12px;
-      box-sizing: border-box;
-    }
-
-    body.horizontal .recommendations {
-      width: 60%;
-    }
-
-    body.vertical .recommendations {
-      width: 100%;
-    }
-
-    .rec-item {
-      padding: 8px 0;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .rec-item:last-child {
-      border-bottom: none;
-    }
-
-    .rec-line {
-      margin: 2px 0;
-      font-size: 14px;
-    }
-
-    .rec-team {
-      font-weight: 600;
-    }
-
-    .rec-tags {
-      font-size: 12px;
-      color: #666;
-    }
-
-    /* ===== 顶部工具条 ===== */
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="page">
-
-    <!-- ===== 顶部 ===== -->
-    <div class="top-bar">
-      <h1>百鬼之主请选卡ヾ(=･ω･=)o</h1>
-      <button id="toggle-layout">切换布局</button>
-    </div>
-
-    <!-- ===== 操作区 ===== -->
-    <div class="control-panel">
-
-      <!-- Ban -->
-      <div class="block">
-        <h2>Ban 位</h2>
-
-        <!-- ⚠️ 快捷区独立存在，不会被删除逻辑误清 -->
-        <div id="ban-quick" class="quick-area"></div>
-
-        <input id="ban-input" placeholder="搜索要 Ban 的式神" autocomplete="off" />
-        <div id="ban-suggestions" class="suggestions"></div>
-
-        <button id="remove-ban" class="danger">删除 Ban 位</button>
-      </div>
-
-      <!-- Enemy -->
-      <div class="block">
-        <h2>敌方式神选择</h2>
-
-        <div id="enemy-quick" class="quick-area"></div>
-
-        <input id="enemy-input" placeholder="搜索敌方式神" autocomplete="off" />
-        <div id="enemy-suggestions" class="suggestions"></div>
-
-        <p id="enemy-status">当前已选：0 / 6</p>
-        <div id="enemy-picked"></div>
-
-        <button id="clear-enemy" class="danger">清空敌方选择</button>
-        <button id="clear-all" class="danger">一键清空（Ban + 敌方）</button>
-      </div>
-    </div>
-
-    <!-- ===== 推荐区 ===== -->
-    <div class="recommendations">
-      <h2>推荐阵容</h2>
-      <div id="recommendations"></div>
-    </div>
-
-  </div>
-
-  <!-- ===== 布局切换逻辑（仅影响 class） ===== -->
-  <script>
-    (function () {
-      const btn = document.getElementById('toggle-layout');
-      let manual = false;
-
-      function autoLayout() {
-        if (manual) return;
-        if (window.innerWidth > window.innerHeight) {
-          document.body.className = 'horizontal';
-        } else {
-          document.body.className = 'vertical';
-        }
-      }
-
-      btn.addEventListener('click', () => {
-        manual = true;
-        document.body.className =
-          document.body.classList.contains('horizontal')
-            ? 'vertical'
-            : 'horizontal';
-      });
-
-      window.addEventListener('resize', autoLayout);
-      autoLayout();
-    })();
-  </script>
-
-  <!-- ===== 原有逻辑 ===== -->
-  <script src="app.js"></script>
-</body>
-</html>
